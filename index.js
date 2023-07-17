@@ -1,32 +1,26 @@
-const express=require("express");
-const bcrypt=require('bcrypt');
-const {connection}=require('./db');
-const {rateLimit}=require('express-rate-limiter');
+const express=require('express');
+const {connection} = require('./db');
+const { postRouter } = require('./routes/posts.route');
+const { userRouter } = require('./routes/user.route');
+const cors=require("cors")
 
-require('dotenv').config()
-const app=express();
+
+const app = express();
+app.use(cors())
 app.use(express.json());
+app.use('/users',userRouter);
+app.use('/post',postRouter);
+require("dotenv").config();
 
-app.get('/regeneratetoken',(req,res)=>{
-    const rToken=req.headers.authorization?.split(" ")[1];
-    const decoded=jwt.verify(rToken,"school");
-    if(decoded){
-        const token=jwt.sign({course:"nxm"},"masai",{
-            expiresIn:300
-        })
-    }else{
-        res.json({msg:"not valid"})
-    }
+
+
+app.listen(process.env.port,async()=>{
+try {
+    await connection
+    console.log(`listening on port ${process.env.port}`);
+    console.log("connected to db");
+} catch (err) {
+    console.log(err);
+    console.log("something went wrong");
+}
 })
-
-app.listen(process.env.port,rateLimit,async()=>{
-    try {
-        await connection
-        console.log(`listening on port ${process.env.port}`);
-        console.log('connected to db');
-    } catch (err) {
-        console.log(err);
-        console.log('something went wrong');
-    }
-})
-
